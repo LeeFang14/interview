@@ -1,31 +1,59 @@
 import { boot } from 'quasar/wrappers';
-import axios, { AxiosInstance } from 'axios';
+import axios from 'axios';
 
-declare module '@vue/runtime-core' {
-  interface ComponentCustomProperties {
-    $axios: AxiosInstance;
-    $api: AxiosInstance;
-  }
-}
+const baseURL = 'https://dahua.metcfire.com.tw/api/CRUDTest';
 
-// Be careful when using SSR for cross-request state pollution
-// due to creating a Singleton instance here;
-// If any client changes this (global) instance, it might be a
-// good idea to move this instance creation inside of the
-// "export default () => {}" function below (which runs individually
-// for each client)
-const api = axios.create({ baseURL: process.env.API });
-
-export default boot(({ app }) => {
-  // for use inside Vue files (Options API) through this.$axios and this.$api
-
-  app.config.globalProperties.$axios = axios;
-  // ^ ^ ^ this will allow you to use this.$axios (for Vue Options API form)
-  //       so you won't necessarily have to import axios in each vue file
-
-  app.config.globalProperties.$api = api;
-  // ^ ^ ^ this will allow you to use this.$api (for Vue Options API form)
-  //       so you can easily perform requests against your app's API
+const API = axios.create({
+  baseURL,
+  headers: {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  },
 });
 
-export { api };
+API.interceptors.request.use(
+  (config) => {
+    return config;
+  },
+  function (error) {
+    return Promise.reject(error);
+  }
+);
+
+API.interceptors.response.use(
+  function (response) {
+    return response;
+  },
+  function (error) {
+    if (error.response) {
+      switch (error.response.status) {
+        case 401:
+          alert('token 無效');
+          console.log(error.message);
+          break;
+        case 404:
+          alert('頁面不存在');
+          console.log(error.message);
+          break;
+        case 500:
+          alert('程式發生問題');
+          console.log(error.message);
+          break;
+        default:
+          alert('程式發生問題');
+          console.log(error.message);
+      }
+    }
+    if (!window.navigator.onLine) {
+      alert('請重新連線後重整網頁');
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default boot(({ app }) => {
+  app.config.globalProperties.$axios = axios;
+  app.config.globalProperties.$api = API;
+});
+
+export { API };
