@@ -150,8 +150,28 @@ const tempData = ref({
   name: '',
   age: '',
 });
-function handleClickOption(btn, data) {
-  // ...
+
+async function addUser() {
+  if (!tempData.value.name || !tempData.value.age) {
+    console.log('必填欄位未填寫');
+    return;
+  }
+
+  const newUser = {
+    name: tempData.value.name,
+    age: parseInt(tempData.value.age, 10),
+  };
+
+  const status = await userStore.createUser(newUser);
+
+  if (status === 200) {
+    tempData.value.name = '';
+    tempData.value.age = '';
+    await fetchUserList();
+    console.log('用戶新增成功');
+  } else {
+    console.error('新增用戶失敗，狀態碼:', status);
+  }
 }
 </script>
 
