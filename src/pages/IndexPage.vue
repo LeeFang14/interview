@@ -2,9 +2,21 @@
   <q-page class="row q-pt-xl">
     <div class="full-width q-px-xl">
       <div class="q-mb-xl">
-        <q-input v-model="tempData.name" label="姓名" />
-        <q-input v-model="tempData.age" label="年齡" />
-        <q-btn color="primary" class="q-mt-md">新增</q-btn>
+        <q-input
+          v-model="tempData.name"
+          label="姓名"
+          :rules="[(val) => !!val || '*必填']"
+        />
+        <q-input
+          v-model="tempData.age"
+          label="年齡"
+          :rules="[
+            (val) => (val !== null && val !== '') || '*必填',
+            (val) =>
+              (Number.isInteger(+val) && +val > 0) || '限輸入數字(正整數)',
+          ]"
+        />
+        <q-btn color="primary" class="q-mt-md" @click="addUser">新增</q-btn>
       </div>
 
       <q-table
