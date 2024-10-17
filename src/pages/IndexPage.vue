@@ -80,18 +80,16 @@
 <script setup lang="ts">
 import axios from 'axios';
 import { QTableProps } from 'quasar';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
+import { useUserStore } from '../stores/user-store';
+const userStore = useUserStore();
+
 interface btnType {
   label: string;
   icon: string;
   status: string;
 }
-const blockData = ref([
-  {
-    name: 'test',
-    age: 25,
-  },
-]);
+
 const tableConfig = ref([
   {
     label: '姓名',
@@ -118,6 +116,23 @@ const tableButtons = ref([
     status: 'delete',
   },
 ]);
+
+function handleClickOption(btn, data) {
+  // ...
+}
+
+onMounted(() => {
+  fetchUserList();
+});
+
+const blockData = ref([]);
+
+async function fetchUserList() {
+  const status = await userStore.fetchUserList();
+  if (status === 200) {
+    blockData.value = userStore.userList;
+  }
+}
 
 const tempData = ref({
   name: '',
