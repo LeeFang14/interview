@@ -30,6 +30,7 @@
       </form>
 
       <q-table
+        class="user-table"
         flat
         bordered
         ref="tableRef"
@@ -39,7 +40,23 @@
         hide-pagination
         separator="cell"
         :rows-per-page-options="[0]"
+        :filter="filter"
+        title="User List"
       >
+        <template v-slot:top-right>
+          <q-input
+            borderless
+            outlined
+            dense
+            debounce="300"
+            v-model="filter"
+            placeholder="Search"
+          >
+            <template v-slot:append>
+              <q-icon name="search" />
+            </template>
+          </q-input>
+        </template>
         <template v-slot:header="props">
           <q-tr :props="props">
             <q-th v-for="col in props.cols" :key="col.name" :props="props">
@@ -124,12 +141,15 @@ const tableConfig = ref([
     name: 'name',
     field: 'name',
     align: 'left',
+    sortable: true,
   },
   {
     label: '年齡',
     name: 'age',
     field: 'age',
     align: 'left',
+    sortable: true,
+    sort: (a, b) => parseInt(a, 10) - parseInt(b, 10),
   },
 ]);
 const tableButtons = ref([
@@ -146,6 +166,17 @@ const tableButtons = ref([
 ]);
 
 const blockData = ref([]);
+
+const filter = ref('');
+const filteredData = computed(() => {
+  return blockData.value.filter((user) => {
+    return (
+      user.name.includes(filter.value) ||
+      user.age.toString().includes(filter.value)
+    );
+  });
+});
+
 onMounted(() => {
   fetchUserList();
 });
@@ -354,6 +385,10 @@ async function deleteUser(data) {
       margin-top: 0px;
     }
   }
+}
+.user-table {
+  max-width: 1024px;
+  margin: 0 auto;
 }
 
 .primary-btn {
