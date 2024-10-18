@@ -1,13 +1,10 @@
-// pinia
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
 import { API } from '../boot/axios';
 
 export const useUserStore = defineStore('user', () => {
-  const user = ref({});
   const userList = ref([]);
 
-  // 創建用戶
   async function createUser(userData) {
     try {
       const response = await API.post('/', userData);
@@ -18,7 +15,6 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  // 獲取用戶列表
   async function fetchUserList() {
     try {
       const response = await API.get('/a');
@@ -30,11 +26,9 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  // 獲取單個用戶
-  async function fetchUser(userID) {
+  async function updateUser(userData) {
     try {
-      const response = await API.get(`/${userID}`);
-      user.value = response.data;
+      const response = await API.patch('/', userData);
       return response.status;
     } catch (error) {
       console.log(error);
@@ -42,18 +36,6 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  // 更新用戶
-  async function updateUser(userID, userData) {
-    try {
-      const response = await API.patch(`/${userID}`, userData);
-      return response.status;
-    } catch (error) {
-      console.log(error);
-      return null;
-    }
-  }
-
-  // 刪除用戶
   async function deleteUser(userID) {
     try {
       const response = await API.delete(`/${userID}`);
@@ -65,11 +47,9 @@ export const useUserStore = defineStore('user', () => {
   }
 
   return {
-    user,
     userList,
     createUser,
     fetchUserList,
-    fetchUser,
     updateUser,
     deleteUser,
   };
