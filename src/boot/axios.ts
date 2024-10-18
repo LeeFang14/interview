@@ -1,4 +1,5 @@
 import { boot } from 'quasar/wrappers';
+import { Dialog, Notify } from 'quasar';
 import axios from 'axios';
 
 const baseURL = 'https://dahua.metcfire.com.tw/api/CRUDTest';
