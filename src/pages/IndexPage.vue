@@ -62,7 +62,16 @@
             <q-th v-for="col in props.cols" :key="col.name" :props="props">
               {{ col.label }}
             </q-th>
-            <q-th></q-th>
+            <q-th>
+              <q-btn
+                class="delete-btn"
+                text-color="red"
+                outline
+                label="全部刪除"
+                @click="deleteUserList"
+                :disable="filteredData.length === 0 || isEditing"
+              />
+            </q-th>
           </q-tr>
         </template>
 
@@ -350,6 +359,53 @@ async function deleteUser(data) {
       position: 'top',
     });
   }
+}
+
+// All Delete
+async function deleteUserList() {
+  $q.dialog({
+    title: '確認刪除',
+    message: '是否確定刪除所有用戶資料？',
+    ok: {
+      label: '確定',
+      flat: true,
+      class: 'ok-btn',
+    },
+    cancel: {
+      label: '取消',
+      flat: true,
+      class: 'cancel-btn',
+    },
+    persistent: true,
+    class: 'confirm-dialog',
+  })
+    .onOk(async () => {
+      const userIDs = blockData.value.map((user) => user.id);
+      try {
+        const deletePromises = userIDs.map((id) => userStore.deleteUser(id));
+        await Promise.all(deletePromises);
+        await fetchUserList();
+        $q.notify({
+          message: '已刪除！',
+          color: 'green',
+          position: 'top',
+        });
+      } catch (error) {
+        console.error('刪除用戶時出錯:', error);
+        $q.notify({
+          message: '刪除失敗，請稍後再試。',
+          color: 'negative',
+          position: 'top',
+        });
+      }
+    })
+    .onCancel(() => {
+      $q.notify({
+        message: '已取消。',
+        color: 'ongoing',
+        position: 'bottom',
+      });
+    });
 }
 </script>
 
