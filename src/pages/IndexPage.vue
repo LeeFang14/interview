@@ -1,23 +1,33 @@
 <template>
   <q-page class="row q-pt-xl">
     <div class="full-width q-px-xl">
-      <div class="q-mb-xl">
+      <form
+        class="user-from"
+        @submit.prevent.stop="isEditing ? updateUser() : addUser()"
+      >
         <q-input
+          ref="nameRef"
           v-model="tempData.name"
           label="姓名"
-          :rules="[(val) => !!val || '*必填']"
+          :rules="nameRules"
+          @update:model-value="onInputChange"
         />
         <q-input
+          ref="ageRef"
           v-model="tempData.age"
           label="年齡"
-          :rules="[
-            (val) => (val !== null && val !== '') || '*必填',
-            (val) =>
-              (Number.isInteger(+val) && +val > 0) || '限輸入數字(正整數)',
-          ]"
+          :rules="ageRules"
+          @update:model-value="onInputChange"
         />
-        <q-btn color="primary" class="q-mt-md" @click="addUser">新增</q-btn>
-      </div>
+        <q-btn
+          text-color="primary"
+          outline
+          class="primary-btn"
+          :disable="isSubmitDisabled"
+          type="submit"
+          >{{ isEditing ? '更新' : '新增' }}</q-btn
+        >
+      </form>
 
       <q-table
         flat
@@ -130,16 +140,55 @@ const tableButtons = ref([
   },
 ]);
 
+const blockData = ref([]);
 function handleClickOption(btn, data) {
   // ...
 }
-
 onMounted(() => {
   fetchUserList();
 });
+const tempData = ref({
+  name: '',
+  age: '',
+});
 
-const blockData = ref([]);
+// Validate Reset
+const nameRef = ref(null);
+const nameRules = [
+  (val) => !!val || '*必填',
+  (val) => val.length <= 15 || '*限輸入15字',
+];
+const ageRef = ref(null);
+const ageRules = [
+  (val) => (val !== null && val !== '') || '*必填',
+  (val) => (Number.isInteger(+val) && +val > 0) || '*限輸入數字(正整數)',
+];
 
+const isSubmitDisabled = computed(() => {
+  const nameValid = nameRef.value?.hasError === false;
+  const ageValid = ageRef.value?.hasError === false;
+  const hasInput =
+    tempData.value.name.trim() !== '' || tempData.value.age.trim() !== '';
+
+  return !(hasInput && nameValid && ageValid);
+});
+
+function onInputChange() {
+  nameRef.value?.validate();
+  ageRef.value?.validate();
+}
+
+function resetForm() {
+  tempData.value.name = '';
+  tempData.value.age = '';
+}
+
+function resetValidation() {
+  nameRef.value.resetValidation();
+  ageRef.value.resetValidation();
+}
+
+// Read
 async function fetchUserList() {
   const status = await userStore.fetchUserList();
   if (status === 200) {
@@ -147,31 +196,31 @@ async function fetchUserList() {
   }
 }
 
-const tempData = ref({
-  name: '',
-  age: '',
-});
-
+// Create
 async function addUser() {
-  if (!tempData.value.name || !tempData.value.age) {
-    console.log('必填欄位未填寫');
-    return;
-  }
-
-  const newUser = {
+  const newUserData = {
     name: tempData.value.name,
     age: parseInt(tempData.value.age, 10),
   };
 
-  const status = await userStore.createUser(newUser);
+  const status = await userStore.createUser(newUserData);
 
   if (status === 200) {
-    tempData.value.name = '';
-    tempData.value.age = '';
+    resetForm();
     await fetchUserList();
-    console.log('用戶新增成功');
+    resetValidation();
+    await nextTick();
+    $q.notify({
+      message: '新增成功！',
+      color: 'green',
+      position: 'top',
+    });
   } else {
-    console.error('新增用戶失敗，狀態碼:', status);
+    $q.notify({
+      message: '新增失敗，請稍後再試。',
+      color: 'negative',
+      position: 'top',
+    });
   }
 }
 </script>
@@ -184,5 +233,29 @@ async function addUser() {
 
 .q-table tbody td {
   font-size: 18px;
+}
+
+.user-from {
+  max-width: 1024px;
+  padding: 20px;
+  margin: 0 auto 48px;
+  border: 1px solid #1976d2;
+  border-radius: 10px;
+  @media (min-width: 1280px) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 50px;
+    & > .q-field {
+      flex-grow: 1;
+    }
+  }
+
+  .primary-btn {
+    margin-top: 16px;
+    @media (min-width: 1280px) {
+      margin-top: 0px;
+    }
+  }
 }
 </style>
