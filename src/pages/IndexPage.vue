@@ -71,6 +71,11 @@
                 :icon="btn.icon"
                 class="q-ml-md"
                 padding="5px 5px"
+                :disable="isEditing && btn.status === 'delete'"
+                :class="{
+                  'hover-bg-primary': btn.status === 'edit',
+                  'hover-bg-danger': btn.status === 'delete',
+                }"
               >
                 <q-tooltip
                   transition-show="scale"
@@ -141,12 +146,10 @@ const tableButtons = ref([
 ]);
 
 const blockData = ref([]);
-function handleClickOption(btn, data) {
-  // ...
-}
 onMounted(() => {
   fetchUserList();
 });
+
 const tempData = ref({
   name: '',
   age: '',
@@ -196,6 +199,40 @@ async function fetchUserList() {
   }
 }
 
+function handleClickOption(btn, data) {
+  if (btn.status === 'edit') {
+    editUser(data);
+  }
+  if (btn.status === 'delete') {
+    $q.dialog({
+      title: '提示',
+      message: '是否確定刪除該筆資料？',
+      ok: {
+        label: '確定',
+        flat: true,
+        class: 'ok-btn',
+      },
+      cancel: {
+        label: '取消',
+        flat: true,
+        class: 'cancel-btn',
+      },
+      persistent: true,
+      class: 'confirm-dialog',
+    })
+      .onOk(() => {
+        deleteUser(data);
+      })
+      .onCancel(() => {
+        $q.notify({
+          message: '已取消。',
+          color: 'ongoing',
+          position: 'bottom',
+        });
+      });
+  }
+}
+
 // Create
 async function addUser() {
   const newUserData = {
@@ -218,6 +255,66 @@ async function addUser() {
   } else {
     $q.notify({
       message: '新增失敗，請稍後再試。',
+      color: 'negative',
+      position: 'top',
+    });
+  }
+}
+
+// Update
+const isEditing = ref(false);
+const editingUserId = ref(null);
+
+function editUser(user) {
+  isEditing.value = true;
+  editingUserId.value = user.id;
+  tempData.value.name = user.name;
+  tempData.value.age = user.age;
+}
+
+async function updateUser() {
+  const updatedUser = {
+    id: editingUserId.value,
+    name: tempData.value.name,
+    age: parseInt(tempData.value.age, 10),
+  };
+
+  const status = await userStore.updateUser(updatedUser);
+
+  if (status === 200) {
+    resetForm();
+    isEditing.value = false;
+    editingUserId.value = null;
+    await fetchUserList();
+    resetValidation();
+    await nextTick();
+    $q.notify({
+      message: '更新成功！',
+      color: 'green',
+      position: 'top',
+    });
+  } else {
+    $q.notify({
+      message: '更新失敗，請稍後再試。',
+      color: 'negative',
+      position: 'top',
+    });
+  }
+}
+
+// Delete
+async function deleteUser(data) {
+  const status = await userStore.deleteUser(data.id);
+  if (status === 200) {
+    await fetchUserList();
+    $q.notify({
+      message: '已刪除！',
+      color: 'green',
+      position: 'top',
+    });
+  } else {
+    $q.notify({
+      message: '刪除失敗，請稍後再試。',
       color: 'negative',
       position: 'top',
     });
@@ -256,6 +353,44 @@ async function addUser() {
     @media (min-width: 1280px) {
       margin-top: 0px;
     }
+  }
+}
+
+.primary-btn {
+  &:hover {
+    background-color: #1976d2 !important;
+    color: #ffffff !important;
+  }
+}
+
+.hover-bg-primary:hover {
+  background-color: #1976d2 !important;
+}
+.hover-bg-danger:hover {
+  background-color: #f44336 !important;
+}
+
+.delete-btn {
+  &:hover {
+    background-color: #f44336 !important;
+    color: #ffffff !important;
+  }
+}
+</style>
+
+<style lang="scss">
+.confirm-dialog {
+  .q-btn:hover {
+    .block {
+      color: #ffffff;
+    }
+  }
+  .ok-btn:hover {
+    background-color: #f44336;
+  }
+
+  .cancel-btn:hover {
+    background-color: #1976d2;
   }
 }
 </style>
