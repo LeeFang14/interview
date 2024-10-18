@@ -90,11 +90,12 @@
 </template>
 
 <script setup lang="ts">
-import axios from 'axios';
-import { QTableProps } from 'quasar';
-import { onMounted, ref } from 'vue';
+import { QTableProps, useQuasar } from 'quasar';
+import { onMounted, ref, computed, nextTick } from 'vue';
 import { useUserStore } from '../stores/user-store';
+
 const userStore = useUserStore();
+const $q = useQuasar();
 
 interface btnType {
   label: string;
