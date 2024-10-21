@@ -199,6 +199,7 @@ const tempData = ref({
 const nameRef = ref(null);
 const nameRules = [
   (val) => !!val || '*必填',
+  (val) => !!val.trim() || '*請勿輸入空白',
   (val) => val.length <= 15 || '*限輸入15字',
 ];
 const ageRef = ref(null);
