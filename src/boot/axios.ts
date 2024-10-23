@@ -1,18 +1,15 @@
 import { boot } from 'quasar/wrappers';
-import { Dialog, Notify } from 'quasar';
 import axios from 'axios';
 
-const baseURL = 'https://dahua.metcfire.com.tw/api/CRUDTest';
-
-const API = axios.create({
-  baseURL,
+const axiosWrapper = axios.create({
+  baseURL: 'https://dahua.metcfire.com.tw/api/CRUDTest',
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
   },
 });
 
-API.interceptors.request.use(
+axiosWrapper.interceptors.request.use(
   (config) => {
     return config;
   },
@@ -21,7 +18,7 @@ API.interceptors.request.use(
   }
 );
 
-API.interceptors.response.use(
+axiosWrapper.interceptors.response.use(
   function (response) {
     return response;
   },
@@ -54,7 +51,7 @@ API.interceptors.response.use(
 
 export default boot(({ app }) => {
   app.config.globalProperties.$axios = axios;
-  app.config.globalProperties.$api = API;
+  app.config.globalProperties.$api = axiosWrapper;
 });
 
-export { API };
+export { axiosWrapper as api };
