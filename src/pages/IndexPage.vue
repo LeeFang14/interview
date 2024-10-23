@@ -385,7 +385,7 @@ async function deleteUserList() {
     class: 'confirm-dialog',
   })
     .onOk(async () => {
-      const userIDs = blockData.value.map((user) => user.id);
+      const userIDs = filteredData.value.map((user) => user.id);
       try {
         const deletePromises = userIDs.map((id) => userStore.deleteUser(id));
         await Promise.all(deletePromises);
