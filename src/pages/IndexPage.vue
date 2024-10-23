@@ -18,7 +18,10 @@
           label="年齡"
           :rules="ageRules"
           @update:model-value="onInputChange"
-        />
+          type="number"
+        >
+          <template v-slot:hint>請輸入數字</template>
+        </q-input>
         <q-btn
           text-color="primary"
           outline
@@ -195,7 +198,7 @@ const tempData = ref({
   age: '',
 });
 
-// Validate Reset
+// Validate and Reset
 const nameRef = ref(null);
 const nameRules = [
   (val) => !!val || '*必填',
@@ -206,6 +209,7 @@ const ageRef = ref(null);
 const ageRules = [
   (val) => (val !== null && val !== '') || '*必填',
   (val) => (Number.isInteger(+val) && +val > 0) || '*限輸入數字(正整數)',
+  (val) => (+val >= 1 && +val <= 99) || '*限輸入範圍(1-99)',
 ];
 
 const isSubmitDisabled = computed(() => {
