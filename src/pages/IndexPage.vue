@@ -298,12 +298,12 @@ function handleClickOption(btn: BtnType, data: User) {
 
 // Create
 async function addUser() {
-  const newUserData = {
-    name: tempData.value.name,
+  const payload = {
+    ...tempData.value,
     age: parseInt(tempData.value.age, 10),
   };
 
-  const status = await userStore.createUser(newUserData);
+  const status = await userStore.createUser(payload);
 
   if (status === 200) {
     resetForm();
@@ -328,14 +328,13 @@ async function addUser() {
 const isEditing = ref<boolean>(false);
 const editingUserId = ref<string | null>(null);
 async function updateUser() {
-  const updatedUser = {
+  const payload = {
     id: editingUserId.value,
-    name: tempData.value.name,
+    ...tempData.value,
     age: parseInt(tempData.value.age, 10),
   };
 
-  const status = await userStore.updateUser(updatedUser);
-
+  const status = await userStore.updateUser(payload);
   if (status === 200) {
     resetForm();
     isEditing.value = false;
