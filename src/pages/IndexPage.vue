@@ -137,17 +137,18 @@
 import { QTableProps, useQuasar } from 'quasar';
 import { onMounted, ref, computed, nextTick } from 'vue';
 import { useUserStore } from '../stores/user-store';
+import { User } from '../types/user';
 
 const userStore = useUserStore();
 const $q = useQuasar();
 
-interface btnType {
+interface BtnType {
   label: string;
   icon: string;
   status: string;
 }
 
-const tableConfig = ref([
+const tableConfig = ref<QTableProps['columns']>([
   {
     label: '姓名',
     name: 'name',
@@ -164,7 +165,7 @@ const tableConfig = ref([
     sort: (a, b) => parseInt(a, 10) - parseInt(b, 10),
   },
 ]);
-const tableButtons = ref([
+const tableButtons = ref<BtnType[]>([
   {
     label: '編輯',
     icon: 'edit',
@@ -177,9 +178,9 @@ const tableButtons = ref([
   },
 ]);
 
-const blockData = ref([]);
+const blockData = ref<User[]>([]);
 
-const filter = ref('');
+const filter = ref<string>('');
 const filteredData = computed(() => {
   return blockData.value.filter((user) => {
     return (
@@ -193,23 +194,31 @@ onMounted(() => {
   fetchUserList();
 });
 
-const tempData = ref({
+const tempData = ref<{ name: string; age: string }>({
   name: '',
   age: '',
 });
 
 // Validate and Reset
-const nameRef = ref(null);
+const nameRef = ref<{
+  validate: () => void;
+  resetValidation: () => void;
+} | null>(null);
+
 const nameRules = [
-  (val) => !!val || '*必填',
-  (val) => !!val.trim() || '*請勿輸入空白',
-  (val) => val.length <= 15 || '*限輸入15字',
+  (val: string) => !!val || '*必填',
+  (val: string) => !!val.trim() || '*請勿輸入空白',
+  (val: string) => val.length <= 15 || '*限輸入15字',
 ];
-const ageRef = ref(null);
+const ageRef = ref<{
+  validate: () => void;
+  resetValidation: () => void;
+} | null>(null);
 const ageRules = [
-  (val) => (val !== null && val !== '') || '*必填',
-  (val) => (Number.isInteger(+val) && +val > 0) || '*限輸入數字(正整數)',
-  (val) => (+val >= 1 && +val <= 99) || '*限輸入範圍(1-99)',
+  (val: string) => (val !== null && val !== '') || '*必填',
+  (val: string) =>
+    (Number.isInteger(+val) && +val > 0) || '*限輸入數字(正整數)',
+  (val: string) => (+val >= 1 && +val <= 99) || '*限輸入範圍(1-99)',
 ];
 
 const isSubmitDisabled = computed(() => {
@@ -232,8 +241,8 @@ function resetForm() {
 }
 
 function resetValidation() {
-  nameRef.value.resetValidation();
-  ageRef.value.resetValidation();
+  nameRef.value?.resetValidation();
+  ageRef.value?.resetValidation();
 }
 
 // Read
@@ -244,37 +253,46 @@ async function fetchUserList() {
   }
 }
 
-function handleClickOption(btn, data) {
-  if (btn.status === 'edit') {
-    editUser(data);
-  }
-  if (btn.status === 'delete') {
-    $q.dialog({
-      title: '提示',
-      message: '是否確定刪除該筆資料？',
-      ok: {
-        label: '確定',
-        flat: true,
-        class: 'ok-btn',
-      },
-      cancel: {
-        label: '取消',
-        flat: true,
-        class: 'cancel-btn',
-      },
-      persistent: true,
-      class: 'confirm-dialog',
-    })
-      .onOk(() => {
-        deleteUser(data);
+function handleClickOption(btn: BtnType, data: User) {
+  switch (btn.status) {
+    case 'edit':
+      isEditing.value = true;
+      tempData.value = { name: data.name, age: data.age.toString() };
+      editingUserId.value = data.id;
+      break;
+
+    case 'delete':
+      $q.dialog({
+        title: '提示',
+        message: '是否確定刪除該筆資料？',
+        ok: {
+          label: '確定',
+          flat: true,
+          class: 'ok-btn',
+        },
+        cancel: {
+          label: '取消',
+          flat: true,
+          class: 'cancel-btn',
+        },
+        persistent: true,
+        class: 'confirm-dialog',
       })
-      .onCancel(() => {
-        $q.notify({
-          message: '已取消。',
-          color: 'ongoing',
-          position: 'bottom',
+        .onOk(() => {
+          deleteUser(data);
+        })
+        .onCancel(() => {
+          $q.notify({
+            message: '已取消。',
+            color: 'ongoing',
+            position: 'bottom',
+          });
         });
-      });
+      break;
+
+    default:
+      console.warn(`Unsupported button status: ${btn.status}`);
+      break;
   }
 }
 
@@ -307,16 +325,8 @@ async function addUser() {
 }
 
 // Update
-const isEditing = ref(false);
-const editingUserId = ref(null);
-
-function editUser(user) {
-  isEditing.value = true;
-  editingUserId.value = user.id;
-  tempData.value.name = user.name;
-  tempData.value.age = user.age;
-}
-
+const isEditing = ref<boolean>(false);
+const editingUserId = ref<string | null>(null);
 async function updateUser() {
   const updatedUser = {
     id: editingUserId.value,
