@@ -1,41 +1,18 @@
-# Quasar App (quasar-project)
+# User Form CRUD
 
-A Quasar Project
+## 使用套件
 
-## Install the dependencies
-```bash
-yarn
-# or
-npm install
-```
+- JS：
 
-### Start the app in development mode (hot-code reloading, error reporting, etc.)
-```bash
-quasar dev
-```
+  - [Vue.js](https://vuejs.org)
+  - [Vue Router](https://router.vuejs.org/)
+  - [Pinia](https://pinia.vuejs.org/)
+  - [TypeScript](https://www.typescriptlang.org/)
 
+- [Vite](https://vitejs.dev/)
 
-### Lint the files
-```bash
-yarn lint
-# or
-npm run lint
-```
+- UI：
 
+  - [quasar](https://quasar.dev/)
 
-### Format the files
-```bash
-yarn format
-# or
-npm run format
-```
-
-
-
-### Build the app for production
-```bash
-quasar build
-```
-
-### Customize the configuration
-See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-config-js).
+- CSS 預處理器：[Sass](https://sass-lang.com/)
